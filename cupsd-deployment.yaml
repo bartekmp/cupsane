@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cupsane
+  labels:
+    app: cupsane
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cupsane
+  template:
+    metadata:
+      labels:
+        app: cupsane
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: workstation
+      containers:
+        - name: cupsane
+          image: bartekmp/cupsane:latest
+          securityContext:
+            privileged: true
+            allowPrivilegeEscalation: true
+          env:
+            - name: SANE_FORCE_HPAIO_ONLY
+              value: "1"
+          ports:
+            - containerPort: 631
+              hostPort: 8631
+              name: ipp
+            - containerPort: 6566
+              hostPort: 6566
+              name: saned
+            - containerPort: 8081
+              hostPort: 8632
+              name: scanweb
+          volumeMounts:
+            - name: dbus-run
+              mountPath: /var/run/dbus
+            - name: usb-bus
+              mountPath: /dev/bus/usb
+            - name: cups-config
+              mountPath: /etc/cups
+            - name: cups-cache
+              mountPath: /var/cache/cups
+            - name: cups-spool
+              mountPath: /var/spool/cups
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 631
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 631
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: dbus-run
+          hostPath:
+            path: /var/run/dbus
+        - name: usb-bus
+          hostPath:
+            path: /dev/bus/usb
+        - name: cups-config
+          hostPath:
+            path: /opt/cupsd-data/config
+        - name: cups-cache
+          hostPath:
+            path: /opt/cupsd-data/cache
+        - name: cups-spool
+          hostPath:
+            path: /opt/cupsd-data/spool
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cupsane
+  labels:
+    app: cupsane
+spec:
+  selector:
+    app: cupsane
+  ports:
+    - name: ipp
+      port: 8631
+      targetPort: 631
+    - name: scanweb
+      port: 8632
+      targetPort: 8081

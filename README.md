@@ -1,5 +1,9 @@
 # cupsane
 
+[![Docker Hub](https://img.shields.io/docker/v/bartekmp/cupsane?label=Docker%20Hub&logo=docker)](https://hub.docker.com/r/bartekmp/cupsane)
+[![GitHub Container Registry](https://img.shields.io/badge/ghcr.io-bartekmp%2Fcupsane-blue?logo=github)](https://ghcr.io/bartekmp/cupsane)
+[![Build](https://github.com/bartekmp/cupsane/actions/workflows/build-and-push.yml/badge.svg)](https://github.com/bartekmp/cupsane/actions/workflows/build-and-push.yml)
+
 A containerized CUPS print server with SANE scanner support and web-based scanning interface (scanservjs), designed for network printing and scanning with HP printers/scanners.
 
 ## Features

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["on the first day of the month"],
+  "timezone": "Europe/Warsaw",
+  "labels": ["dependencies"],
+  "assignees": ["bartekmp"],
+  "commitMessagePrefix": "fix(deps):",
+  "semanticCommits": "enabled",
+  "groupName": "all dependencies",
+  "groupSlug": "all",
+  "separateMajorMinor": false,
+  "separateMinorPatch": false,
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "major docker updates",
+      "commitMessagePrefix": "feat(deps)!:"
+    }
+  ]
+}

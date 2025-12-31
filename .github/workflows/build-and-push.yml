@@ -11,58 +11,59 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      version_bump:
-        description: 'Version bump type (patch, minor, major) or leave empty to use VERSION file'
-        required: false
-        default: ''
 
 env:
   DOCKERHUB_REPO: bartekmp/cupsane
   GHCR_REPO: ghcr.io/${{ github.repository_owner }}/cupsane
 
 jobs:
-  build-and-push:
+  version:
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    outputs:
+      new_tag: ${{ steps.tag.outputs.new_tag }}
+      new_version: ${{ steps.tag.outputs.new_version }}
     permissions:
       contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump version and push tag
+        id: tag
+        uses: anothrNick/github-tag-action@1.67.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          DEFAULT_BUMP: patch
+          RELEASE_BRANCHES: main
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: [version]
+    if: always() && (needs.version.result == 'success' || github.event_name == 'pull_request')
+    permissions:
+      contents: read
       packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Read version from VERSION file
-        id: version
-        run: |
-          VERSION=$(cat VERSION | tr -d '\n\r ')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Current version: $VERSION"
-
-      - name: Check if version tag exists on Docker Hub
-        id: check_version
-        run: |
-          if docker manifest inspect ${{ env.DOCKERHUB_REPO }}:${{ steps.version.outputs.version }} > /dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "Version ${{ steps.version.outputs.version }} already exists, skipping push"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "Version ${{ steps.version.outputs.version }} is new, will push"
-          fi
-
       - name: Set up Docker Buildx
-        if: steps.check_version.outputs.exists == 'false' || github.event_name == 'pull_request'
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request' && steps.check_version.outputs.exists == 'false'
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Log in to GitHub Container Registry
-        if: github.event_name != 'pull_request' && steps.check_version.outputs.exists == 'false'
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -70,7 +71,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata for Docker
-        if: steps.check_version.outputs.exists == 'false' || github.event_name == 'pull_request'
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -79,10 +79,9 @@ jobs:
             ${{ env.GHCR_REPO }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=${{ steps.version.outputs.version }}
+            type=raw,value=${{ needs.version.outputs.new_version }},enable=${{ github.event_name != 'pull_request' }}
 
       - name: Build and push
-        if: steps.check_version.outputs.exists == 'false' || github.event_name == 'pull_request'
         uses: docker/build-push-action@v5
         with:
           context: .

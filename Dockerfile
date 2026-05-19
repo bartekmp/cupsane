@@ -1,6 +1,6 @@
 FROM sbs20/scanservjs:latest AS scanservjs
 
-FROM alpine:latest
+FROM alpine:edge
 
 RUN echo '@community https://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories && \
     echo '@testing https://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \

@@ -2,7 +2,7 @@ FROM sbs20/scanservjs:latest AS scanservjs
 
 FROM alpine:3.23
 
-RUN echo '@community https://dl-cdn.alpinelinux.org/alpine/v3.23/community' >> /etc/apk/repositories && \
+RUN echo 'https://dl-cdn.alpinelinux.org/alpine/v3.23/community' >> /etc/apk/repositories && \
     echo '@testing https://dl-cdn.alpinelinux.org/alpine/v3.23/testing' >> /etc/apk/repositories && \
     apk update && apk --no-cache add \
     curl cups cups-filters cups-pdf@testing ghostscript gutenprint \

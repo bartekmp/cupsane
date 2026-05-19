@@ -1,14 +1,14 @@
 FROM sbs20/scanservjs:latest AS scanservjs
 
-FROM alpine:3.23
+FROM alpine:edge
 
-RUN echo 'https://dl-cdn.alpinelinux.org/alpine/v3.23/community' >> /etc/apk/repositories && \
+RUN echo 'https://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories && \
     echo '@testing https://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
     apk update && apk --no-cache add \
     curl cups cups-filters cups-pdf@testing ghostscript gutenprint \
     py3-reportlab libjpeg-turbo net-snmp libusb py3-dbus python3 \
     sane sane-backends sane-airscan \
-    hplip@testing sane-backend-hpaio@testing \
+    hplip sane-backend-hpaio \
     nodejs npm imagemagick
 
 # Copy scanservjs from official image

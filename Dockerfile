@@ -6,7 +6,7 @@ RUN echo '@community https://dl-cdn.alpinelinux.org/alpine/v3.23/community' >> /
     echo '@testing https://dl-cdn.alpinelinux.org/alpine/v3.23/testing' >> /etc/apk/repositories && \
     apk update && apk --no-cache add \
     curl cups cups-filters cups-pdf@testing ghostscript gutenprint \
-    py3-reportlab libjpeg net-snmp libusb py3-dbus python3 \
+    py3-reportlab libjpeg-turbo net-snmp libusb py3-dbus python3 \
     sane sane-backends sane-airscan \
     hplip@testing sane-backend-hpaio@testing \
     nodejs npm imagemagick
